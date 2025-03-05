@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xóc Đĩa Offline</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input, select {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+            width: 200px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Xóc Đĩa Offline</h2>
+        <input type="text" id="codeInput" placeholder="Nhập chuỗi 9 số" maxlength="9" pattern="[0-9]{9}">
+        <input type="text" id="keySelect" placeholder="Nhập 6 chữ" maxlength="6" ">
+        <!-- <select id="keySelect"> -->
+            <!-- <option value="BMWR">BMWR</option> -->
+            <!-- <option value="QTVT">QTVT</option> -->
+            <!-- <option value="DVTH">DVTH</option> -->
+            <!-- <option value="DMKI">DMKI</option> -->
+            <!-- <option value="DTTW">DTTW</option> -->
+            <!-- <option value="DTAT">DTAT</option> -->
+            <!-- <option value="DTQN">DTQN</option> -->
+            <!-- <option value="THAT">THAT</option> -->
+        <!-- </select> -->
+        <button onclick="calculateResultOnline()">Xác định Chẵn/Lẻ</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Dữ liệu JSON luật offline - Định nghĩa đầy đủ
+        const rules = {
+            "BMWR": {
+                "0": {"positions": "0,1,8", "strArrChan": "0,1", "strArrLe": "4,3", "div": 5, "random": 2},
+                "1": {"positions": "0,1,3", "strArrChan": "2,4", "strArrLe": "0,3", "div": 5, "random": 1},
+                "2": {"positions": "1,2,7", "strArrChan": "4,1", "strArrLe": "2,3", "div": 5, "random": 0},
+                "3": {"positions": "0,3,4", "strArrChan": "0,1", "strArrLe": "4,3", "div": 5, "random": 2},
+                "4": {"positions": "2,4,6", "strArrChan": "2,3", "strArrLe": "0,1", "div": 5, "random": 4},
+                "5": {"positions": "2,4,5", "strArrChan": "0,2", "strArrLe": "3,4", "div": 5, "random": 1},
+                "6": {"positions": "2,4,5", "strArrChan": "0,4", "strArrLe": "2,1", "div": 5, "random": 3},
+                "7": {"positions": "0,1,7", "strArrChan": "4,3", "strArrLe": "2,1", "div": 5, "random": 0},
+                "8": {"positions": "3,4,5", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "9": {"positions": "1,2,6", "strArrChan": "0,3", "strArrLe": "2,4", "div": 5, "random": 1},
+                "10": {"positions": "4,5,8", "strArrChan": "1,4", "strArrLe": "0,3", "div": 5, "random": 2},
+                "11": {"positions": "0,1,5", "strArrChan": "4,1", "strArrLe": "2,3", "div": 5, "random": 0},
+                "12": {"positions": "1,3,4", "strArrChan": "0,1", "strArrLe": "2,4", "div": 5, "random": 3}
+            },
+            "QTVT": {
+                "0": {"positions": "0,3,8", "strArrChan": "0,1", "strArrLe": "4,3", "div": 5, "random": 2},
+                "1": {"positions": "0,7,8", "strArrChan": "2,4", "strArrLe": "0,3", "div": 5, "random": 1},
+                "2": {"positions": "1,4,7", "strArrChan": "4,1", "strArrLe": "2,3", "div": 5, "random": 0},
+                "3": {"positions": "3,4", "strArrChan": "0,1", "strArrLe": "4,3", "div": 5, "random": 2},
+                "4": {"positions": "2,5,6", "strArrChan": "2,3", "strArrLe": "0,1", "div": 5, "random": 4},
+                "5": {"positions": "1,4,7", "strArrChan": "0,2", "strArrLe": "3,4", "div": 5, "random": 1},
+                "6": {"positions": "2,3,8", "strArrChan": "0,4", "strArrLe": "2,1", "div": 5, "random": 3},
+                "7": {"positions": "0,5,7", "strArrChan": "4,3", "strArrLe": "2,1", "div": 5, "random": 0},
+                "8": {"positions": "0,4,5", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "9": {"positions": "1,4,6", "strArrChan": "0,3", "strArrLe": "2,4", "div": 5, "random": 1},
+                "10": {"positions": "2,5,8", "strArrChan": "1,4", "strArrLe": "0,3", "div": 5, "random": 2},
+                "11": {"positions": "0,3,5", "strArrChan": "4,1", "strArrLe": "2,3", "div": 5, "random": 0},
+                "12": {"positions": "0,3,8", "strArrChan": "0,1", "strArrLe": "2,4", "div": 5, "random": 3}
+            },
+            "DVTH": {
+                "0": {"positions": "1,3,8", "strArrChan": "0,2", "strArrLe": "4,3", "div": 5, "random": 1},
+                "1": {"positions": "2,7,8", "strArrChan": "2,4", "strArrLe": "1,3", "div": 5, "random": 0},
+                "2": {"positions": "3,4,7", "strArrChan": "4,1", "strArrLe": "2,3", "div": 5, "random": 0},
+                "3": {"positions": "1,3,4", "strArrChan": "0,1", "strArrLe": "4,3", "div": 5, "random": 2},
+                "4": {"positions": "2,5,7", "strArrChan": "2,3", "strArrLe": "0,1", "div": 5, "random": 4},
+                "5": {"positions": "3,4,7", "strArrChan": "1,2", "strArrLe": "3,4", "div": 5, "random": 0},
+                "6": {"positions": "2,3,5", "strArrChan": "3,4", "strArrLe": "0,1", "div": 5, "random": 2},
+                "7": {"positions": "1,5,7", "strArrChan": "0,3", "strArrLe": "1,4", "div": 5, "random": 2},
+                "8": {"positions": "0,4,5", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "9": {"positions": "1,4,6", "strArrChan": "1,3", "strArrLe": "2,4", "div": 5, "random": 0},
+                "10": {"positions": "2,5,8", "strArrChan": "1,4", "strArrLe": "0,3", "div": 5, "random": 2},
+                "11": {"positions": "0,3,5", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "12": {"positions": "0,3,8", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 3}
+            },
+            "DMKI": {
+                "0": {"positions": "6,7,8", "strArrChan": "0,2", "strArrLe": "1,3", "div": 5, "random": 4},
+                "1": {"positions": "2,4,5", "strArrChan": "2,4", "strArrLe": "1,3", "div": 5, "random": 0},
+                "2": {"positions": "3,5,7", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "3": {"positions": "2,3,4", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "4": {"positions": "2,5,6", "strArrChan": "2,3", "strArrLe": "0,1", "div": 5, "random": 4},
+                "5": {"positions": "3,6,7", "strArrChan": "1,2", "strArrLe": "3,4", "div": 5, "random": 0},
+                "6": {"positions": "0,3,5", "strArrChan": "3,4", "strArrLe": "0,1", "div": 5, "random": 2},
+                "7": {"positions": "4,5,7", "strArrChan": "0,3", "strArrLe": "1,4", "div": 5, "random": 2},
+                "8": {"positions": "0,4,5", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "9": {"positions": "1,4,6", "strArrChan": "1,3", "strArrLe": "2,4", "div": 5, "random": 0},
+                "10": {"positions": "2,5,6", "strArrChan": "1,4", "strArrLe": "0,3", "div": 5, "random": 2},
+                "11": {"positions": "1,3,5", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "12": {"positions": "0,3,7", "strArrChan": "0,1", "strArrLe": "2,4", "div": 5, "random": 3}
+            },
+            "DTTW": {
+                "0": {"positions": "6,7", "strArrChan": "2,4", "strArrLe": "1,3", "div": 5, "random": 0},
+                "1": {"positions": "0,4,5", "strArrChan": "2,4", "strArrLe": "1,3", "div": 5, "random": 0},
+                "2": {"positions": "0,3,5", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "3": {"positions": "1,3,4", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "4": {"positions": "5,6", "strArrChan": "2,3", "strArrLe": "0,1", "div": 5, "random": 4},
+                "5": {"positions": "3,6,8", "strArrChan": "1,2", "strArrLe": "3,4", "div": 5, "random": 0},
+                "6": {"positions": "1,3,5", "strArrChan": "3,4", "strArrLe": "0,1", "div": 5, "random": 2},
+                "7": {"positions": "0,5,7", "strArrChan": "0,3", "strArrLe": "1,4", "div": 5, "random": 2},
+                "8": {"positions": "0,1,5", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "9": {"positions": "1,4,8", "strArrChan": "1,3", "strArrLe": "2,4", "div": 5, "random": 0},
+                "10": {"positions": "0,5,6", "strArrChan": "1,4", "strArrLe": "0,3", "div": 5, "random": 2},
+                "11": {"positions": "1,3", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "12": {"positions": "0,3,5", "strArrChan": "0,1", "strArrLe": "2,4", "div": 5, "random": 3}
+            },
+            "DTAT": {
+                "0": {"positions": "6,7,8", "strArrChan": "2,4", "strArrLe": "1,3", "div": 5, "random": 0},
+                "1": {"positions": "1,4,5", "strArrChan": "2,4", "strArrLe": "1,3", "div": 5, "random": 0},
+                "2": {"positions": "0,3,7", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "3": {"positions": "1,3,6", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "4": {"positions": "5,6,8", "strArrChan": "2,3", "strArrLe": "0,1", "div": 5, "random": 4},
+                "5": {"positions": "0,6,8", "strArrChan": "1,2", "strArrLe": "3,4", "div": 5, "random": 0},
+                "6": {"positions": "2,3,7", "strArrChan": "3,4", "strArrLe": "0,1", "div": 5, "random": 2},
+                "7": {"positions": "0,4,7", "strArrChan": "0,3", "strArrLe": "1,4", "div": 5, "random": 2},
+                "8": {"positions": "0,4,5", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "9": {"positions": "1,6,8", "strArrChan": "1,3", "strArrLe": "2,4", "div": 5, "random": 0},
+                "10": {"positions": "2,5,6", "strArrChan": "1,4", "strArrLe": "0,3", "div": 5, "random": 2},
+                "11": {"positions": "1,3,5", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "12": {"positions": "0,3,8", "strArrChan": "0,1", "strArrLe": "2,4", "div": 5, "random": 3}
+            },
+            "DTQN": {
+                "0": {"positions": "1,2,3", "strArrChan": "2,4", "strArrLe": "1,3", "div": 5, "random": 0},
+                "1": {"positions": "1,3,6", "strArrChan": "2,4", "strArrLe": "1,3", "div": 5, "random": 0},
+                "2": {"positions": "2,3,7", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "3": {"positions": "1,3,6", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "4": {"positions": "5,6,7", "strArrChan": "2,3", "strArrLe": "0,4", "div": 5, "random": 1},
+                "5": {"positions": "0,6,8", "strArrChan": "0,1", "strArrLe": "3,4", "div": 5, "random": 2},
+                "6": {"positions": "2,3,7", "strArrChan": "3,4", "strArrLe": "0,1", "div": 5, "random": 2},
+                "7": {"positions": "0,6,7", "strArrChan": "0,3", "strArrLe": "1,2", "div": 5, "random": 4},
+                "8": {"positions": "0,4,6", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "9": {"positions": "1,2,8", "strArrChan": "1,3", "strArrLe": "2,4", "div": 5, "random": 0},
+                "10": {"positions": "3,4,6", "strArrChan": "1,4", "strArrLe": "0,3", "div": 5, "random": 2},
+                "11": {"positions": "1,3,5", "strArrChan": "0,1", "strArrLe": "2,3", "div": 5, "random": 4},
+                "12": {"positions": "0,3,5", "strArrChan": "0,1", "strArrLe": "2,4", "div": 5, "random": 3}
+            },
+            "THAT": {
+                "0": {"positions": "0,1,2", "strArrChan": "2,4", "strArrLe": "1,3", "div": 5, "random": 0},
+                "1": {"positions": "1,3,6", "strArrChan": "2,4", "strArrLe": "1,3", "div": 5, "random": 0},
+                "2": {"positions": "2,3,4", "strArrChan": "0,4", "strArrLe": "2,3", "div": 5, "random": 1},
+                "3": {"positions": "1,3,6", "strArrChan": "0,3", "strArrLe": "1,2", "div": 5, "random": 4},
+                "4": {"positions": "1,6,7", "strArrChan": "2,3", "strArrLe": "0,4", "div": 5, "random": 1},
+                "5": {"positions": "3,6,8", "strArrChan": "0,1", "strArrLe": "3,4", "div": 5, "random": 2},
+                "6": {"positions": "2,3,8", "strArrChan": "3,4", "strArrLe": "0,1", "div": 5, "random": 2},
+                "7": {"positions": "2,6,7", "strArrChan": "0,3", "strArrLe": "1,2", "div": 5, "random": 4},
+                "8": {"positions": "0,4,6", "strArrChan": "0,1", "strArrLe": "2,4", "div": 5, "random": 3},
+                "9": {"positions": "1,2,8", "strArrChan": "1,3", "strArrLe": "2,4", "div": 5, "random": 0},
+                "10": {"positions": "3,4,6", "strArrChan": "1,4", "strArrLe": "0,3", "div": 5, "random": 2},
+                "11": {"positions": "1,3,5", "strArrChan": "0,1", "strArrLe": "2,4", "div": 5, "random": 3},
+                "12": {"positions": "0,3,5", "strArrChan": "0,1", "strArrLe": "2,4", "div": 5, "random": 3}
+            }
+        };
+
+
+		async function calculateResultOnline() {
+            let code = document.getElementById("codeInput").value;
+			const keyInput = document.getElementById("keySelect").value.toUpperCase();
+            const resultDiv = document.getElementById("result");
+			
+			
+            // Kiểm tra input
+            if (!code || code.length !== 9 || !/^\d+$/.test(code)) {
+                resultDiv.innerHTML = "Vui lòng nhập chuỗi 9 số hợp lệ!";
+                return;
+            }
+
+// Kiểm tra keyInput
+            if (keyInput.length !== 6) {
+                resultDiv.innerHTML = "Key phải có đúng 6 chữ!";
+                return;
+            }
+
+            const key = keyInput.substring(0, 4); // Lấy 4 chữ đầu làm key
+            const mode = keyInput.charAt(5);
+
+			if (mode !== 'C' && mode !== 'K') {
+                resultDiv.innerHTML = "Random";
+                return;
+            }
+
+			if (mode === 'C') {
+            // Gửi yêu cầu POST đến API
+				try {
+                const response = await fetch('https://cobacbiptoanquoc.com/api-game/xocdia-app/comtuanhnxocdiamoi2024/rule.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        app_id: "com.dungtt.xocdia2022",
+                        code: key
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Lỗi khi gọi API');
+                }
+
+                const apiData = await response.json().data;
+
+                // Dữ liệu API mẫu:
+                // {
+                //     "app_id": "com.dungtt.xocdia2022",
+                //     "bat_con": false,
+                //     "bat_cai": false,
+                //     "bat_con_code": false,
+                //     "bat_cai_code": false,
+                //     "end_time": "1741107056",
+                //     "random_number": "3",
+                //     "positions": "1,8",
+                //     "arr_chan": "1,4",
+                //     "arr_le": "0,2",
+                //     "so_chia": "5"
+                // }
+
+                // Xử lý dữ liệu từ API
+                const ruleChild = apiData.bat_con;        // Tương ứng this.ruleChild
+                const ruleChildCode = apiData.bat_con_code; // Tương ứng this.ruleChildCode
+                const endTime = parseInt(apiData.end_time);
+                const random = parseInt(apiData.random_number);
+                const positions = apiData.positions.split(",").map(Number);
+                const arrChan = apiData.arr_chan.split(",").map(Number);
+                const arrLe = apiData.arr_le.split(",").map(Number);
+                const div = parseInt(apiData.so_chia);
+
+                // Tách chuỗi 9 số thành mảng
+                const numbers = code.split("").map(Number);
+
+                // Kiểm tra thời gian
+                const currentTime = Math.floor(Date.now() / 1000); // Unix timestamp hiện tại
+                let isChan = "Lẻ";
+
+                if ((ruleChild || ruleChildCode) && endTime > currentTime) {
+                    // Tính tổng các số tại vị trí positions
+                    let sum = 0;
+                    for (let pos of positions) {
+                        sum += numbers[pos];
+                    }
+
+                    // Chia lấy dư
+                    const remainder = sum % div;
+
+                    // Kiểm tra chẵn/lẻ dựa trên arrChan
+                    if (arrChan.length > 0 && remainder !== random) {
+                        for (let value of arrChan) {
+                            if (value === remainder) {
+                                isChan = "Chẵn";
+                                break;
+                            }
+                        }
+                    } else {
+                        // Ngẫu nhiên nếu không có điều kiện cụ thể
+                        isChan = "Random" ;//randomValue(999) % 2 === 0;
+                    }
+                } else {
+                    // Nếu hết thời gian, trả về ngẫu nhiên
+                    isChan ="Random";// randomValue(999) % 2 === 0;
+                }
+
+                // Hiển thị kết quả
+                resultDiv.innerHTML = `Mã: ${code} - Key: ${key} - Kết quả: ${isChan ? "Chẵn" : "Lẻ"}`;
+            } catch (error) {
+                resultDiv.innerHTML = `Lỗi: ${error.message}`;
+            }
+			}else if (mode === 'K') {
+			
+					
+				// Tính str từ thời gian local
+				const now = new Date();
+				const day = now.getDate(); // Ngày (1-31)
+				const month = now.getMonth(); // Tháng (0-11)
+				const hour = now.getHours(); // Giờ (0-23)
+				const str = ((day + month + hour) % 13).toString();
+
+				// Kiểm tra luật tồn tại
+				if (!rules[key] || !rules[key][str]) {
+					resultDiv.innerHTML = `Không tìm thấy luật cho key "${key}" và str "${str}"!`;
+					return;
+				}
+
+				// Lấy luật từ JSON
+				const rule = rules[key][str];
+
+				// Tách chuỗi 9 số thành mảng
+				const numbers = code.split("").map(Number);
+
+				// Tính tổng các số tại vị trí positions
+				const positions = rule.positions.split(",").map(Number);
+				let sum = 0;
+				for (let pos of positions) {
+					sum += numbers[pos];
+				}
+
+				// Chia lấy dư với div
+				const remainder = sum % rule.div;
+
+				// Kiểm tra Chẵn/Lẻ
+				const chanValues = rule.strArrChan.split(",").map(Number);
+				const leValues = rule.strArrLe.split(",").map(Number);
+				let isChan = "Lẻ";
+
+				if (chanValues.length > 0 && remainder !== rule.random) {
+					for (let value of chanValues) {
+						if (value === remainder) {
+							isChan = "Chẵn";
+							break;
+						}
+					}
+				} else {
+					// Ngẫu nhiên nếu không có luật cụ thể hoặc remainder bằng random
+					isChan ="Random";// Math.floor(Math.random() * 1000) % 2 === 0;
+				}
+
+				// Hiển thị kết quả
+				resultDiv.innerHTML = `Mã: ${code} - Str: ${str} - Kết quả: ${isChan}`;
+			
+			
+			}
+        }
+
+
+        function calculateResult() {
+            const code = document.getElementById("codeInput").value;
+            const key = document.getElementById("keySelect").value;
+            const resultDiv = document.getElementById("result");
+
+            // Kiểm tra input
+            if (!code || code.length !== 9 || !/^\d+$/.test(code)) {
+                resultDiv.innerHTML = "Vui lòng nhập chuỗi 9 số hợp lệ!";
+                return;
+            }
+
+            // Tính str từ thời gian local
+            const now = new Date();
+            const day = now.getDate(); // Ngày (1-31)
+            const month = now.getMonth(); // Tháng (0-11)
+            const hour = now.getHours(); // Giờ (0-23)
+            const str = ((day + month + hour) % 13).toString();
+
+            // Kiểm tra luật tồn tại
+            if (!rules[key] || !rules[key][str]) {
+                resultDiv.innerHTML = `Không tìm thấy luật cho key "${key}" và str "${str}"!`;
+                return;
+            }
+
+            // Lấy luật từ JSON
+            const rule = rules[key][str];
+
+            // Tách chuỗi 9 số thành mảng
+            const numbers = code.split("").map(Number);
+
+            // Tính tổng các số tại vị trí positions
+            const positions = rule.positions.split(",").map(Number);
+            let sum = 0;
+            for (let pos of positions) {
+                sum += numbers[pos];
+            }
+
+            // Chia lấy dư với div
+            const remainder = sum % rule.div;
+
+            // Kiểm tra Chẵn/Lẻ
+            const chanValues = rule.strArrChan.split(",").map(Number);
+            const leValues = rule.strArrLe.split(",").map(Number);
+            let isChan = "Lẻ";
+
+            if (chanValues.length > 0 && remainder !== rule.random) {
+                for (let value of chanValues) {
+                    if (value === remainder) {
+                        isChan = "Chẵn";
+                        break;
+                    }
+                }
+            } else {
+                // Ngẫu nhiên nếu không có luật cụ thể hoặc remainder bằng random
+                isChan ="Random";// Math.floor(Math.random() * 1000) % 2 === 0;
+            }
+
+            // Hiển thị kết quả
+            resultDiv.innerHTML = `Mã: ${code} - Str: ${str} - Kết quả: ${isChan}`;
+        }
+    </script>
+</body>
+</html>
