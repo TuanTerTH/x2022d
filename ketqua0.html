@@ -206,7 +206,7 @@
             const month = now.getMonth(); // Tháng (0-11)
             const hour = now.getHours(); // Giờ (0-23)
             const str = ((day + month + hour) % 13).toString();
-
+            console.log("hour:"+hour);
             // Kiểm tra luật tồn tại
             if (!rules[key] || !rules[key][str]) {
                 resultDiv.innerHTML = `Không tìm thấy luật cho key "${key}" và str "${str}"!`;
@@ -226,9 +226,11 @@
                 sum += numbers[pos];
             }
 
+            console.log("sum:"+sum);
             // Chia lấy dư với div
             const remainder = sum % rule.div;
-
+            
+            console.log("remainder:"+remainder);
             // Kiểm tra Chẵn/Lẻ
             const chanValues = rule.strArrChan.split(",").map(Number);
             const leValues = rule.strArrLe.split(",").map(Number);
