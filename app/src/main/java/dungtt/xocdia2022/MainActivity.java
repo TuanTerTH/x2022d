@@ -16,6 +16,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -124,6 +125,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //    @BindView(2131231232)
 //    ImageView x9;
     TextView tvCode;
+    EditText ed;
+    EditText tvCode;
     public MainActivity() {
     }
 
